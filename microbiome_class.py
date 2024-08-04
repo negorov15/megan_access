@@ -304,51 +304,41 @@ class MicrobiomeDataAnalyzer:
         permanova_results = permanova(distance, grouping)
         return permanova_results
 
-# Object Alice
-otumat_alice = otu_table('alice.csv')
-taxmat_alice = tax_table('alice.csv')
-metadata_dict_alice = {
-    'SampleID': ['Alice00-1mio.daa', 'Alice01-1mio.daa',
-                 'Alice03-1mio.daa', 'Alice06-1mio.daa',
-                 'Alice08-1mio.daa', 'Alice34-1mio.daa'],
-    'Group': ['Without treatment', 'With treatment', 'With treatment',
-              'With treatment', 'Without treatment', 'Without treatment'],
-    'Property': ['0-', '1+', '3+', '6+', '8-', '34-']
-}
-metadata_alice = pd.DataFrame(metadata_dict_alice)
-sample_alice = MicrobiomeDataAnalyzer(otumat_alice,taxmat_alice,metadata_alice)
+# Example data
+if __name__ == '__main__':
 
-# Object Bob
-otumat_bob = otu_table('bob.csv')
-taxmat_bob = tax_table('bob.csv')
-metadata_dict_bob = {
-    'SampleID': ['Bob00-1mio.daa', 'Bob01-1mio.daa',
-                 'Bob03-1mio.daa', 'Bob06-1mio.daa',
-                 'Bob08-1mio.daa', 'Bob34-1mio.daa'],
-    'Group': ['Without treatment', 'With treatment', 'With treatment',
-              'With treatment', 'Without treatment', 'Without treatment'],
-    'Property': ['0-', '1+', '3+', '6+', '8-', '34-']
-}
-metadata_bob = pd.DataFrame(metadata_dict_bob)
-sample_bob = MicrobiomeDataAnalyzer(otumat_bob,taxmat_bob, metadata_bob)
+    # Object Alice
+    otumat_alice = otu_table('alice.csv')
+    taxmat_alice = tax_table('alice.csv')
+    # Example metadata
+    metadata_dict_alice = {
+        'SampleID': ['Alice00-1mio.daa', 'Alice01-1mio.daa',
+                     'Alice03-1mio.daa', 'Alice06-1mio.daa',
+                     'Alice08-1mio.daa', 'Alice34-1mio.daa'],
+        'Group': ['Without treatment', 'With treatment', 'With treatment',
+                  'With treatment', 'Without treatment', 'Without treatment'],
+        'Property': ['0-', '1+', '3+', '6+', '8-', '34-']
+    }
+    metadata_alice = pd.DataFrame(metadata_dict_alice)
+    sample_alice = MicrobiomeDataAnalyzer(otumat_alice,taxmat_alice,metadata_alice)
 
-# metadata_kitten = {
-#     'SampleID': ['sample01.daa', 'sample02.daa',
-#                  'sample03.daa', 'sample05.daa',
-#                  'sample06.daa', 'sample08.daa',
-#                  'sample09.daa', 'sample10.daa',
-#                  'sample11.daa', 'sample12.daa'],
-#     'Group': ['Orange', 'Orange', 'Orange', 'Orange', 'Orange', 'Black',
-#               'Black', 'Black', 'Black', 'Black'],
-#     'Property': ['MedA', 'MedB', 'MedB', 'Orange', 'Orange', 'Black',
-#               'Black', 'Black', 'Black', 'Black']
-# }
+    # Object Bob
+    otumat_bob = otu_table('bob.csv')
+    taxmat_bob = tax_table('bob.csv')
+    metadata_dict_bob = {
+        'SampleID': ['Bob00-1mio.daa', 'Bob01-1mio.daa',
+                     'Bob03-1mio.daa', 'Bob06-1mio.daa',
+                     'Bob08-1mio.daa', 'Bob34-1mio.daa'],
+        'Group': ['Without treatment', 'With treatment', 'With treatment',
+                  'With treatment', 'Without treatment', 'Without treatment'],
+        'Property': ['0-', '1+', '3+', '6+', '8-', '34-']
+    }
+    metadata_bob = pd.DataFrame(metadata_dict_bob)
+    sample_bob = MicrobiomeDataAnalyzer(otumat_bob, taxmat_bob, metadata_bob)
 
-#abundance = sample.abundance_table()
-print(sample_alice.permanova())
-print(sample_bob.permanova())
-print(sample_alice.t_test())
-print(sample_bob.t_test())
-#sample.plot_rank('Phylum')
-#sample.plot_top(5)
-#sample.plot_pcoa()
+    print(sample_alice.permanova())
+    print(sample_bob.permanova())
+    print(sample_alice.t_test())
+    print(sample_bob.t_test())
+    sample_bob.plot_rank('Phylum')
+    sample_bob.plot_top(5)
