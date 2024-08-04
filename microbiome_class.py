@@ -1,12 +1,14 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 from scipy import stats
 import matplotlib.pyplot as plt
+
 from scipy.stats import wilcoxon
-from skbio.stats.distance import permanova
-from get_lineage import get_lineage
 from skbio.stats.ordination import pcoa
+from skbio.stats.distance import permanova
 from skbio.diversity import beta_diversity
+
+from get_lineage import get_lineage
 from modificator import otu_table, tax_table
 
 # Class MicrobiomeDataAnalyzer.
