@@ -1,0 +1,27 @@
+# IDE Settings (PyCharm / IntelliJ)
+.idea/
+*.iws
+out/
+shelf/
+workspace.xml
+httpRequests/
+dataSources/
+dataSources.local.xml
+
+# Python - compiled files and caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Environments and Secrets
+.env
+.venv/
+venv/
+env/
+
+# OS generated files
+.DS_Store
+Thumbs.db
