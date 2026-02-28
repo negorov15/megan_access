@@ -7,12 +7,13 @@ A simple Python package for downloading and analysing datasets from a MeganServe
 - a `MicrobiomeDataAnalyzer` class with statistics and plotting helpers for microbiome studies
 
 This repository contains helper modules for working with megan-server outputs and performing downstream reporting and visualization.
+
 For more information about the megan-server refer to the following repo: https://github.com/husonlab/megan-ce/tree/master/src/megan/ms
 ---
 
 ## Features
 
-- Authenticate and list available datasets from a MEGAN server
+- Authenticate and list available datasets from the megan-server
 - Select multiple datasets interactively and merge them into a single comparison table
 - Convert raw MEGAN classification blocks into OTU and taxonomy matrices
 - Request taxonomic lineages from NCBI using `ete3`
@@ -51,7 +52,7 @@ pip install pandas requests ete3 numpy scipy matplotlib scikit-bio
 
 ### Command‑line access
 
-Run `megan_accessor.py` to interactively query a MEGAN server:
+Run `megan_accessor.py` to interactively query the megan-server:
 
 ```bash
 python3 megan_accessor.py
@@ -117,7 +118,7 @@ sample_bob.plot_top(5)
 ## Data formats
 
 ### MEGAN Classification Blocks
-Raw output from a MEGAN server. Tab-delimited text with multiple header lines:
+Raw output from the server. Tab-delimited text with multiple header lines:
 - **Lines 1–2**: metadata/comments (skipped by `dataset_modifier()`)
 - **Line 3+**: data rows with columns `readID`, `taxid`, `weight`, etc.
 
