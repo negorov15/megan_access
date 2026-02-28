@@ -2,22 +2,26 @@ import pandas as pd
 from ete3 import NCBITaxa
 
 ncbi = NCBITaxa()
-#ncbi.update_taxonomy_database()
+# Update database if necessary
+# ncbi.update_taxonomy_database()
 
-# Function gets a lineage for each taxa ID for tax matrix.
-# Input: pandas DataFrame dataset
-# Output: list of lineages
+
 def get_lineage(dataset):
+    """
+    Gets a lineage for each taxa ID for tax matrix.
+    Input: pandas DataFrame dataset
+    Output: list of lineages
+    """
     # Read the input file
     df = pd.read_csv(dataset, delimiter="\t")
     list_of_lineages = []
     # Extract taxa ids and loop through the list
-    tax_ids = df['Taxa']
+    tax_ids = df["Taxa"]
     for id in tax_ids:
         # -2 = 'Not assigned'.
         # We just add 'not assigned' rank also to the list to avoid misunderstandings
         if id == -2:
-            list_of_lineages.append('Not assigned')
+            list_of_lineages.append("Not assigned")
             continue
         else:
             try:
@@ -28,11 +32,23 @@ def get_lineage(dataset):
     sorted_lineages = sort_ranks(list_of_lineages)
     return translate_lineage(sorted_lineages)
 
-# Helper function. Sorts ranks so that only major ranks left.
-# Input: List of lineages
-# Output: List of sorted lineages
+
 def sort_ranks(data):
-    major_ranks = ["superkingdom", "phylum", "class", "order", "family", "genus", "species"]
+    """
+    Sorts ranks so that only major ranks left.
+    Input: List of lineages
+    Output: List of sorted lineages
+    """
+    major_ranks = [
+        "superkingdom",
+        "domain",
+        "phylum",
+        "class",
+        "order",
+        "family",
+        "genus",
+        "species",
+    ]
     sorted_ranks = []
     for lineage in data:
         # Temporary list for storing ranks.
@@ -55,10 +71,13 @@ def sort_ranks(data):
             sorted_ranks.append((lineage_ranks))
     return sorted_ranks
 
-# Function translates the lineages into names.
-# Input: List of lineages
-# Output: Translated list of lineages
+
 def translate_lineage(list_of_lineages):
+    """
+    Translates the lineages into names.
+    Input: List of lineages
+    Output: Translated list of lineages
+    """
     # Empty list where all names will be stored
     names = []
     # Loop through each lineage list and get the names of each rank
@@ -74,5 +93,8 @@ def translate_lineage(list_of_lineages):
     # Create a DataFrame where:
     # Rows: taxa
     # Columns: taxonomy lineage associated with the taxa
-    df = pd.DataFrame(names, columns=["Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"])
+    df = pd.DataFrame(
+        names,
+        columns=["Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"],
+    )
     return df

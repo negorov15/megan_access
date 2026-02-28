@@ -7,36 +7,37 @@ from scipy.stats import wilcoxon
 from skbio.stats.ordination import pcoa
 from skbio.stats.distance import permanova
 from skbio.diversity import beta_diversity
-
-from get_lineage import get_lineage
 from modificator import otu_table, tax_table
 
 # Class MicrobiomeDataAnalyzer.
 # Contains: OTU table, Taxa table and corresponding metadata
 class MicrobiomeDataAnalyzer:
-    def __init__(self, OTU_table: str = "", Taxa_table: str = "",
-                 Metadata: str = "") -> None:
-        self.OTU_table=OTU_table
-        self.Taxa_table=Taxa_table
-        self.Metadata=Metadata
+    def __init__(
+        self, OTU_table: str = "", Taxa_table: str = "", Metadata: str = ""
+    ) -> None:
+        self.OTU_table = OTU_table
+        self.Taxa_table = Taxa_table
+        self.Metadata = Metadata
 
-    # Data manipulation functions:
-    # 1. prepare_dataset(self)
-    # 2. abundance_table()
-    # Helper-function. Transposes the given dataset.
+
     def prepare_dataset(self):
+        """
+        Prepares the dataset for analysis by transposing the OTU table and merging with metadata.
+        Input: OTU table and metadata
+        Output: Merged DataFrame ready for analysis
+        """
         # Transpose the OTU dataframe
         otumat_transposed = self.OTU_table.T
 
         # Reset indices in transposed OTU table
         otumat_transposed = otumat_transposed.reset_index()
-        otumat_transposed = otumat_transposed.rename(columns={'index': 'SampleID'})
+        otumat_transposed = otumat_transposed.rename(columns={"index": "SampleID"})
 
         # If the metadata includes multiple properties, you can delete them and use only 'Group' column
-        filtered_metadata = self.Metadata.drop("Property", axis='columns')
+        filtered_metadata = self.Metadata.drop("Property", axis="columns")
         # Merge the OTU table with the metadata
         # input_data = pd.merge(otumat_transposed, self.Metadata, on='SampleID')
-        input_data = pd.merge(otumat_transposed, filtered_metadata, on='SampleID')
+        input_data = pd.merge(otumat_transposed, filtered_metadata, on="SampleID")
 
         # In this step we move the column with group property right after the column with SampleID.
         column_to_move = input_data.pop("Group")
@@ -46,8 +47,13 @@ class MicrobiomeDataAnalyzer:
 
         return input_data
 
-    # Create an abundance table.
+
     def abundance_table(self):
+        """
+        Prepares the abundance table by converting read counts to relative abundances.
+        Input: OTU table with read counts
+        Output: OTU table with relative abundances
+        """
         # New DataFrame with relative abundances
         abundance_table = self.OTU_table.copy()
         for column in abundance_table:
@@ -55,11 +61,7 @@ class MicrobiomeDataAnalyzer:
             abundance_table[column] = abundance_table[column].apply(lambda x: x / sum)
         return abundance_table
 
-    # Data visualization functions
-    # 1. plot_rank()
-    # 2. plot_top()
-    # 3. plot_pcoa()
-    # Plot the dataset by a certain rank
+
     def plot_rank(self, rank):
         taxa_mapping = self.Taxa_table[rank]
         aggregated = self.OTU_table.groupby(taxa_mapping, axis=0).sum()
@@ -71,13 +73,21 @@ class MicrobiomeDataAnalyzer:
         fig, ax = plt.subplots(figsize=(20, 15))
 
         # Plot the data with larger font sizes
-        df_t.plot(kind='bar', stacked=True, ax=ax)
+        df_t.plot(kind="bar", stacked=True, ax=ax)
 
-        ax.set_ylabel('Abundance', fontsize=40)  # Increase font size for y-axis label
-        ax.tick_params(axis='x', labelsize=28, rotation=45)  # Increase font size for x-axis ticks
-        ax.tick_params(axis='y', labelsize=28)  # Increase font size for y-axis ticks
-        ax.legend(title=rank, fontsize='20', title_fontsize='25', loc='upper left', bbox_to_anchor=(1.05, 1),
-                  borderaxespad=0.)  # Adjust legend font size
+        ax.set_ylabel("Abundance", fontsize=40)  # Increase font size for y-axis label
+        ax.tick_params(
+            axis="x", labelsize=28, rotation=45
+        )  # Increase font size for x-axis ticks
+        ax.tick_params(axis="y", labelsize=28)  # Increase font size for y-axis ticks
+        ax.legend(
+            title=rank,
+            fontsize="20",
+            title_fontsize="25",
+            loc="upper left",
+            bbox_to_anchor=(1.05, 1),
+            borderaxespad=0.0,
+        )  # Adjust legend font size
 
         plt.tight_layout()  # Adjust the layout
         plt.show()
@@ -93,9 +103,13 @@ class MicrobiomeDataAnalyzer:
         # Extract the most specific taxonomic rank for the top OTUs from the taxonomy table
         top_otus_tax_rank = {}
         for otu in top_otus:
-            tax_info = self.Taxa_table.loc[otu]  # Access the row corresponding to the OTU
+            tax_info = self.Taxa_table.loc[
+                otu
+            ]  # Access the row corresponding to the OTU
             # Filter out empty or NaN values and get the last available taxonomic rank
-            specific_rank = tax_info.dropna().iloc[-1] if not tax_info.dropna().empty else 'Unknown'
+            specific_rank = (
+                tax_info.dropna().iloc[-1] if not tax_info.dropna().empty else "Unknown"
+            )
             top_otus_tax_rank[otu] = specific_rank
 
         # Filter the DataFrame for these top OTUs
@@ -108,18 +122,24 @@ class MicrobiomeDataAnalyzer:
         fig, ax = plt.subplots(figsize=(20, 15))
 
         # Plot the data
-        df_t.plot(kind='bar', stacked=True, ax=ax)
+        df_t.plot(kind="bar", stacked=True, ax=ax)
 
         # Update plot titles and labels with larger font sizes
-        ax.set_title(f'Top {top} taxa by read count', fontsize=45)
-        ax.set_ylabel('Read Count', fontsize=40)
-        ax.tick_params(axis='x', labelsize=28, rotation=45)
-        ax.tick_params(axis='y', labelsize=28)
+        ax.set_title(f"Top {top} taxa by read count", fontsize=45)
+        ax.set_ylabel("Read Count", fontsize=40)
+        ax.tick_params(axis="x", labelsize=28, rotation=45)
+        ax.tick_params(axis="y", labelsize=28)
 
         # Update the legend to use the most specific available taxonomic rank instead of OTU identifiers
         legend_labels = [top_otus_tax_rank[otu] for otu in top_otus]
-        ax.legend(legend_labels, fontsize='20', title_fontsize='25', loc='upper left', bbox_to_anchor=(1.05, 1),
-                  borderaxespad=0.)
+        ax.legend(
+            legend_labels,
+            fontsize="20",
+            title_fontsize="25",
+            loc="upper left",
+            bbox_to_anchor=(1.05, 1),
+            borderaxespad=0.0,
+        )
 
         plt.tight_layout()
         plt.show()
@@ -132,14 +152,14 @@ class MicrobiomeDataAnalyzer:
 
         pcoa_samples = pcoa_results.samples
 
-        groups = np.array(self.Metadata['Group'])
-        treatment_day = np.array(self.Metadata['Property'])
+        groups = np.array(self.Metadata["Group"])
+        treatment_day = np.array(self.Metadata["Property"])
         pcoa_samples.insert(0, "Group", groups)
         pcoa_samples.insert(1, "Property", treatment_day)
 
         # Set up the color palette
-        unique_groups = pcoa_samples['Group'].unique()
-        colors = plt.get_cmap('tab10')(range(len(unique_groups)))
+        unique_groups = pcoa_samples["Group"].unique()
+        colors = plt.get_cmap("tab10")(range(len(unique_groups)))
         color_map = dict(zip(unique_groups, colors))
 
         # Initialize an empty set to keep track of groups already added to the legend
@@ -147,49 +167,48 @@ class MicrobiomeDataAnalyzer:
 
         # Plot each sample and annotate it with the sample ID
         for idx, row in pcoa_samples.iterrows():
-            group = row['Group']
-            pc1 = row['PC1']
-            pc2 = row['PC2']
-            property = row['Property']
+            group = row["Group"]
+            pc1 = row["PC1"]
+            pc2 = row["PC2"]
+            property = row["Property"]
 
             if group not in seen_groups:
-                plt.scatter(pc1, pc2, color=color_map[group], label=group,
-                            alpha=0.7)  # Include label only if group is unseen
+                plt.scatter(
+                    pc1, pc2, color=color_map[group], label=group, alpha=0.7
+                )  # Include label only if group is unseen
                 seen_groups.add(group)  # Mark the group as seen
             else:
-                plt.scatter(pc1, pc2, color=color_map[group], alpha=0.7)  # No label for already seen groups
+                plt.scatter(
+                    pc1, pc2, color=color_map[group], alpha=0.7
+                )  # No label for already seen groups
 
             plt.text(pc1, pc2, property, fontsize=9)
 
-        plt.xlabel('PC1')
-        plt.ylabel('PC2')
-        plt.title('PCoA of Beta Diversity')
-        plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+        plt.xlabel("PC1")
+        plt.ylabel("PC2")
+        plt.title("PCoA of Beta Diversity")
+        plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
         plt.tight_layout()
         plt.show()
 
-    # Statistical analysis functions:
-    # 1. t_test()
-    # 2. anova_test()
-    # 3. kruskal()
-    # 4. permanova()
-    # 5. beta_diversity()
-    # Perform an independent t-Test
     def t_test(self):
         # Prepare the dataset
         input_data = self.prepare_dataset()
 
         # Find all unique color groups in the dataset.
-        unique_groups = input_data['Group'].unique()
+        unique_groups = input_data["Group"].unique()
         # Save the possible colors
-        column_property = input_data['Group']
+        column_property = input_data["Group"]
 
         # Perform t-Test for each OTU column
         t_test_results = {}
         for otu in input_data.columns[2:]:  # Skipping 'SampleID' and 'Property'
 
             # Filter the dataframe by color and drop missing values.
-            groups = [input_data[column_property == property][otu].dropna() for property in unique_groups]
+            groups = [
+                input_data[column_property == property][otu].dropna()
+                for property in unique_groups
+            ]
 
             t_stat, p_value = stats.ttest_ind(*groups)
 
@@ -206,16 +225,19 @@ class MicrobiomeDataAnalyzer:
         input_data = self.prepare_dataset()
         # Prepare groups for ANOVA
         # Find all unique groups in the dataset.
-        unique_groups = input_data['Group'].unique()
+        unique_groups = input_data["Group"].unique()
         # Save the possible properties (for example: fur color of the subject)
-        column_property = input_data['Group']
+        column_property = input_data["Group"]
 
         # Perform ANOVA for each OTU column
         anova_results = {}
         for otu in input_data.columns[2:]:  # Skipping 'SampleID' and 'Property'
 
             # Filter the dataframe by color and drop missing values.
-            groups = [input_data[column_property == property][otu].dropna() for property in unique_groups]
+            groups = [
+                input_data[column_property == property][otu].dropna()
+                for property in unique_groups
+            ]
 
             f_value, p_value = stats.f_oneway(*groups)
 
@@ -231,16 +253,19 @@ class MicrobiomeDataAnalyzer:
         # Prepare the dataset
         input_data = self.prepare_dataset()
         # Find all unique groups in the dataset.
-        unique_groups = input_data['Group'].unique()
+        unique_groups = input_data["Group"].unique()
         # Save the possible properties (for example: fur color of the subject)
-        column_property = input_data['Group']
+        column_property = input_data["Group"]
 
         # Perform Kruskal for each OTU column
         kruskal_results = {}
         for otu in input_data.columns[2:]:  # Skipping 'SampleID' and 'Property'
 
             # Filter the dataframe by color and drop missing values.
-            groups = [input_data[column_property == property][otu].dropna() for property in unique_groups]
+            groups = [
+                input_data[column_property == property][otu].dropna()
+                for property in unique_groups
+            ]
 
             stat, p_value = stats.kruskal(*groups)
 
@@ -256,11 +281,13 @@ class MicrobiomeDataAnalyzer:
         input_data = self.prepare_dataset()
 
         # Assuming two unique groups represent paired data (e.g., "before" and "after")
-        if len(input_data['Group'].unique()) != 2:
-            raise ValueError("There must be exactly two groups for the Wilcoxon signed-rank test.")
+        if len(input_data["Group"].unique()) != 2:
+            raise ValueError(
+                "There must be exactly two groups for the Wilcoxon signed-rank test."
+            )
 
         # Retrieve the unique groups for clarity
-        group1, group2 = input_data['Group'].unique()
+        group1, group2 = input_data["Group"].unique()
 
         # Perform Wilcoxon test for each OTU column
         wilcoxon_results = {}
@@ -268,8 +295,8 @@ class MicrobiomeDataAnalyzer:
         for otu in input_data.columns[2:]:  # Skipping 'SampleID' and 'Group'
 
             # Filter the dataframe by group and drop missing values
-            group1_data = input_data[input_data['Group'] == group1][otu].dropna()
-            group2_data = input_data[input_data['Group'] == group2][otu].dropna()
+            group1_data = input_data[input_data["Group"] == group1][otu].dropna()
+            group2_data = input_data[input_data["Group"] == group2][otu].dropna()
 
             # Ensure equal lengths before performing the test
             min_len = min(len(group1_data), len(group2_data))
@@ -302,45 +329,7 @@ class MicrobiomeDataAnalyzer:
 
     def permanova(self):
         distance = self.beta_diversity()
-        grouping = self.Metadata['Group']
+        grouping = self.Metadata["Group"]
         permanova_results = permanova(distance, grouping)
         return permanova_results
 
-# Example data
-if __name__ == '__main__':
-
-    # Object Alice
-    otumat_alice = otu_table('alice.csv')
-    taxmat_alice = tax_table('alice.csv')
-    # Example metadata
-    metadata_dict_alice = {
-        'SampleID': ['Alice00-1mio.daa', 'Alice01-1mio.daa',
-                     'Alice03-1mio.daa', 'Alice06-1mio.daa',
-                     'Alice08-1mio.daa', 'Alice34-1mio.daa'],
-        'Group': ['Without treatment', 'With treatment', 'With treatment',
-                  'With treatment', 'Without treatment', 'Without treatment'],
-        'Property': ['0-', '1+', '3+', '6+', '8-', '34-']
-    }
-    metadata_alice = pd.DataFrame(metadata_dict_alice)
-    sample_alice = MicrobiomeDataAnalyzer(otumat_alice,taxmat_alice,metadata_alice)
-
-    # Object Bob
-    otumat_bob = otu_table('bob.csv')
-    taxmat_bob = tax_table('bob.csv')
-    metadata_dict_bob = {
-        'SampleID': ['Bob00-1mio.daa', 'Bob01-1mio.daa',
-                     'Bob03-1mio.daa', 'Bob06-1mio.daa',
-                     'Bob08-1mio.daa', 'Bob34-1mio.daa'],
-        'Group': ['Without treatment', 'With treatment', 'With treatment',
-                  'With treatment', 'Without treatment', 'Without treatment'],
-        'Property': ['0-', '1+', '3+', '6+', '8-', '34-']
-    }
-    metadata_bob = pd.DataFrame(metadata_dict_bob)
-    sample_bob = MicrobiomeDataAnalyzer(otumat_bob, taxmat_bob, metadata_bob)
-
-    print(sample_alice.permanova())
-    print(sample_bob.permanova())
-    print(sample_alice.t_test())
-    print(sample_bob.t_test())
-    sample_bob.plot_rank('Phylum')
-    sample_bob.plot_top(5)
